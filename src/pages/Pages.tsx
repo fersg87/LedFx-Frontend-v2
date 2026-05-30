@@ -45,6 +45,7 @@ import PixelGraphSettingsFloating from '../components/Integrations/Spotify/Widge
 import GlobalColorWidget from '../components/Integrations/Spotify/Widgets/GlobalColorWidget/GlobalColorWidget'
 import ReactFlowPage from './ReactFlow/ReactFlowPage'
 import BackendPlaylistPage from './Scenes/BackendPlaylistPage'
+import VenuesPage from './Venues/VenuesPage'
 import Visualiser from '../components/AudioVisualiser/AudioVisualiser'
 import SettingsNew from './Settings/SettingsNew'
 import ElectronStoreInspector from '../components/DevTools/ElectronStoreInspector'
@@ -259,6 +260,7 @@ const Routings = () => {
               <Route path="/reactflow" element={<ReactFlowPage />} />
               <Route path="/YZflow" element={<ReactFlowPage />} />
               <Route path="/playlists" element={<BackendPlaylistPage />} />
+              <Route path="/venues" element={<VenuesPage />} />
 
               <Route
                 path="*"
