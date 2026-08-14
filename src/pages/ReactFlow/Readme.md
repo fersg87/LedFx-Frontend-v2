@@ -22,6 +22,8 @@ Nodes are the fundamental building blocks of your flow. There are several types 
 
 *   **Scene (Sender)**: Each of your saved scenes can be added to the canvas as a Scene node. Activating a Scene node will apply the scene's configuration to all connected virtuals.
 
+*   **Pad Grid (Sender)**: A grid of one-tap colour pads. Tapping a pad tints the effects running on the connected virtuals; tapping the lit pad again (or the `Clear` button) puts the original colours straight back. See [Pad Grid](#pad-grid) below.
+
 ### Edges
 
 Edges are the lines you draw between nodes. They represent the flow of effect data from a sender node to a receiver node. To create an edge, simply click and drag from the handle on the right side of a sender node to the handle on the left side of a receiver node.
@@ -34,12 +36,47 @@ Edges are the lines you draw between nodes. They represent the flow of effect da
 
 *   **Collapsing Nodes**: To keep your canvas clean and organized, all sender nodes can be collapsed to hide their detailed settings. They start in a collapsed state by default. Simply click the collapse/expand icon in the node's header to toggle its state.
 
+## Pad Grid
+
+The Pad Grid is built for live use: you want to wash the room in a colour for a
+chorus and then get the show back, without editing anything.
+
+It differs from the other senders in one important way. The Omni and Effect
+senders **change** the effect: the new colour is written into the effect's
+config and saved, so the previous colour is gone. A pad grid applies an
+**override** instead — the effect keeps running underneath, untouched, and
+clearing the override reveals it again exactly as it was. Overrides are not
+saved to the LedFx config and do not survive a restart of the core.
+
+Because it is an override rather than a config change, it also works on effects
+that have no colour setting at all (Energy, for example): those are recoloured
+as they are rendered, keeping their brightness animation so beats still read.
+
+### Using it
+
+*   **Add one**: right-click the canvas → `Sender` → `Pad Grid`, or use the
+    `Add Pad Grid` button in the toolbar. Give it a name.
+*   **Choose its targets**: drag from the handle on its right edge to the Virtual
+    nodes you want it to control. The globe/hub button in the node header
+    switches between *connected virtuals only* and *all virtuals*.
+*   **Tap a pad** to apply that colour. The pad shows `ON`. Tap it again, tap
+    `Clear`, or tap a different pad to change.
+*   **Edit the pads**: click the pencil in the node header. In edit mode you can
+    resize the grid, change the pad size, and click any pad to open a colour or
+    gradient picker. Click the pencil again to go back to live mode.
+
+Pads are stored with the node, so they are included in saved layouts, exports
+and imports along with everything else on the canvas.
+
+Because override state lives in the LedFx core rather than the browser, a pad
+lit on one device shows as lit on every other device pointed at the same core.
+
 ## How-To Guides
 
 ### Adding and Removing Nodes
 
 *   **To Add a Node**: Right-click anywhere on the canvas to open the context menu. From here you can:
-    *   Add a `Scoped Omni` or `Effect` sender via the "Sender" submenu. You will be prompted to give the new node a name.
+    *   Add a `Scoped Omni`, `Effect` or `Pad Grid` sender via the "Sender" submenu. You will be prompted to give the new node a name.
     *   Add a `Scene` via the "Sender" -> "Scene" submenu.
     *   Add a `Virtual` that isn't already on the canvas via the "Receiver" submenu.
 *   **To Remove a Node**: Select the node you wish to remove and press the `Delete` or `Backspace` key.

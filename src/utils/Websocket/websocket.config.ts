@@ -24,7 +24,8 @@ export const initialSubscriptions = [
   { event_type: 'clients_updated', id: 9015 },
   { event_type: 'client_broadcast', id: 9016 },
   { event_type: 'audio_device_list_changed', id: 9017 },
-  { event_type: 'now_playing_gradient_changed', id: 9018 }
+  { event_type: 'now_playing_gradient_changed', id: 9018 },
+  { event_type: 'virtual_color_override', id: 9019 }
 ]
 
 // A declarative "recipe" for how to handle incoming events.
@@ -87,6 +88,7 @@ export const handlerConfig = {
   graph_update: true,
   effect_set: true,
   colors_updated: 'colors_updated',
+  virtual_color_override: true,
   clients_updated: 'clients_updated',
   song_detected: true,
   now_playing_gradient_changed: true,

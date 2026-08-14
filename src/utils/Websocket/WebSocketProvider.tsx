@@ -117,6 +117,13 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
           return
         }
 
+        // Track colour overrides centrally: the pad grid that triggered one may
+        // not be mounted when another client changes it, and state has to stay
+        // correct either way. Still dispatched, so mounted views can react.
+        if (eventType === 'virtual_color_override' && data.virtual_id) {
+          useStore.getState().setColorOverride(data.virtual_id, data.color_override ?? null)
+        }
+
         const rule = handlerConfig[eventType as keyof typeof handlerConfig]
         let payload = data
 

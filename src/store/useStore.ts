@@ -39,6 +39,7 @@ import storeClients from './api/storeClients'
 import storeVisualizerConfigOptimistic from './ui-persist/storeVisualizerConfigOptimistic'
 import storeSendspin from './api/storeSendspin'
 import storeNowPlaying from './api/storeNowPlaying'
+import storeColorOverrides from './api/storeColorOverrides'
 
 const useStore = create(
   devtools(
@@ -83,7 +84,8 @@ const useStore = create(
           ...storeCloud(set),
           ...storeVisualizerConfigOptimistic(set),
           ...storeSendspin(set),
-          ...storeNowPlaying(set)
+          ...storeNowPlaying(set),
+          ...storeColorOverrides(set)
         })
       ),
       {
@@ -122,7 +124,11 @@ const useStore = create(
                   // to a file that no longer exists, and the player renders a
                   // 404 instead of its fallback.
                   'thumbnailPath',
-                  'albumArtCacheBuster'
+                  'albumArtCacheBuster',
+                  // Server state: overrides live only in the running core and
+                  // do not survive its restart, so a persisted copy would show
+                  // pads lit for an override that is no longer applied.
+                  'colorOverrides'
                 ].includes(key)
             )
           )

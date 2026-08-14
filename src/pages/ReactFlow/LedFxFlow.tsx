@@ -44,16 +44,25 @@ import {
   Input,
   Menu as MenuIcon,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  GridView
 } from '@mui/icons-material'
 import PlaylistNode from './PlaylistNode'
+import PadGridNode, { buildDefaultPads, DEFAULT_PAD_COLS, DEFAULT_PAD_ROWS } from './PadGridNode'
 
 const nodeTypes = {
   sender: SenderNodeOmni,
   sendereffect: SenderNodeEffect,
   virtual: VirtualNode,
   scene: SceneNode,
-  playlist: PlaylistNode
+  playlist: PlaylistNode,
+  padgrid: PadGridNode
+}
+
+const NODE_BASE_NAMES: Record<string, string> = {
+  sender: 'Omni Sender',
+  sendereffect: 'Effect Sender',
+  padgrid: 'Pad Grid'
 }
 
 let senderId = 1
@@ -63,6 +72,7 @@ const LedFxFlow = () => {
   const scenes = useStore((state) => state.scenes)
   const playlists = useStore((state) => state.playlists)
   const getVirtuals = useStore((state) => state.getVirtuals)
+  const getColorOverrides = useStore((state) => state.getColorOverrides)
 
   const scenesArray = useMemo(() => {
     return Object.entries(scenes).map(([id, sceneData]) => ({
@@ -166,6 +176,7 @@ const LedFxFlow = () => {
           (node) =>
             node.type?.startsWith('sender') ||
             node.type === 'scene' ||
+            node.type === 'padgrid' ||
             filteredVirtualIds.has(node.id)
         )
 
@@ -200,6 +211,23 @@ const LedFxFlow = () => {
               ...node.data,
               isSyncing: node.data.isSyncing ?? true,
               isCollapsed: node.data.isCollapsed ?? true,
+              onNodeDataChange
+            }
+          }
+          if (node.type === 'padgrid') {
+            // Pads are serialised with the layout; the callback is not, so it
+            // has to be re-attached on every load.
+            const rows = (node.data.rows as number) ?? DEFAULT_PAD_ROWS
+            const cols = (node.data.cols as number) ?? DEFAULT_PAD_COLS
+            node.data = {
+              ...node.data,
+              scope: node.data.scope ?? 'scoped',
+              rows,
+              cols,
+              pads: node.data.pads ?? buildDefaultPads(rows * cols),
+              padSizeKey: node.data.padSizeKey ?? 'M',
+              isCollapsed: node.data.isCollapsed ?? false,
+              isEditMode: false,
               onNodeDataChange
             }
           }
@@ -270,6 +298,8 @@ const LedFxFlow = () => {
 
   useEffect(() => {
     getVirtuals()
+    // Pad grids light from server state, so seed it before the first render
+    getColorOverrides()
     updateSavedLayoutsState()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -342,8 +372,10 @@ const LedFxFlow = () => {
   const handleNameSubmit = () => {
     senderId++
     const nodeType = dialogState.nodeType
-    const baseName = nodeType === 'sender' ? 'Omni Sender' : 'Effect Sender'
+    const baseName = NODE_BASE_NAMES[nodeType] ?? 'Sender'
     const name = newNodeName.trim() === '' ? `${baseName}: ${senderId}` : newNodeName.trim()
+
+    const isPadGrid = nodeType === 'padgrid'
 
     const newNode = {
       id: `${nodeType}-${senderId}`,
@@ -356,8 +388,18 @@ const LedFxFlow = () => {
         name,
         scope: 'scoped',
         isSyncing: true,
-        isCollapsed: true,
-        onNodeDataChange
+        // A pad grid is useless collapsed, so it opens showing its pads
+        isCollapsed: !isPadGrid,
+        onNodeDataChange,
+        ...(isPadGrid
+          ? {
+              rows: DEFAULT_PAD_ROWS,
+              cols: DEFAULT_PAD_COLS,
+              pads: buildDefaultPads(DEFAULT_PAD_ROWS * DEFAULT_PAD_COLS),
+              padSizeKey: 'M',
+              isEditMode: false
+            }
+          : {})
       }
     }
 
@@ -371,6 +413,10 @@ const LedFxFlow = () => {
 
   const addSenderNodeEffect = () => {
     handleOpenDialog('sendereffect')
+  }
+
+  const addPadGridNode = () => {
+    handleOpenDialog('padgrid')
   }
 
   const addSceneNode = (sceneId: string) => {
@@ -582,6 +628,9 @@ const LedFxFlow = () => {
             </Button>
             <Button onClick={addSenderNodeEffect} variant="contained">
               Add Sender Effect
+            </Button>
+            <Button onClick={addPadGridNode} variant="contained">
+              Add Pad Grid
             </Button>
             <Button onClick={handleExport} variant="contained">
               Export
@@ -806,6 +855,18 @@ const LedFxFlow = () => {
             <AddCircleOutline fontSize="small" />
           </ListItemIcon>
           Effect
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            handleOpenDialog('padgrid')
+            setSenderMenuAnchorEl(null)
+            setContextMenu(null)
+          }}
+        >
+          <ListItemIcon>
+            <GridView fontSize="small" />
+          </ListItemIcon>
+          Pad Grid
         </MenuItem>
         <MenuItem
           onClick={(e) => {
